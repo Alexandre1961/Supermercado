@@ -1,0 +1,583 @@
+#LB7#'Dimensoes da tela do LB NG
+'1 coluna tem 8 pixels e 1 linha tem 14 pixels
+'Resolução LB NG 79 Colunas x 17 Linhas = (79*8 = 632) x (17*14 = 378)
+'Monitor proporção 4 x 3 = 800 x 600 = 1024 x 768
+'800\8 = 100 colunas
+'600\14 = 42,8 linhas
+'1024\8 = 128
+'768\14 = 54,85 
+
+'######################################################################################
+'DEFINIÇÕES DA Window
+Window Size = Max,Max
+Window Pos = Center,Center
+Font Parent.Nome = "Akbar"
+Font Parent.Color = Blue
+Font Parent.Size = 16
+Font Parent.Bold=True  
+
+'######################################################################################
+'CRIAÇÃO DAS VARIAVEIS
+Var Info String ' Usada para Calendario
+'Var Hoje String ' Usada para armazenar a data
+'Var Dia String ' Usada para armazenar o dia
+'Var Agora String 'Usada para armazenar a hora
+Var Dados String ' Usado para armazenar o Path dos BDs
+Var Mg String 'Usada para receber a Resposta de Mensagens True\NAO
+Var Posi Integer 'Usada para excluir um registro
+Var Total Decimal,'udsado para verificar o total da compra
+Var Cont Integer 'Usada como contador em Loops
+Var QBox Integer ' Usada na paginação do BoxCadPro
+Var ContPag Integer ' Usada para paginação do BoxCadPr0
+Var CodDigitado String 'Usada no Temporizador_Pesquisa de Produto e Código   
+Var ProDigitado String 'Usada no Temporizador_Pesquisa de Produto e Código
+Var TxtSepBD String 'Usada para criar a String do campo do BD a ser pesquisado
+Var TReg Integer 
+Var Qt Decimal
+
+'######################################################################################
+'CRIAÇÃO DOS BDs
+Dados=JoinStr(ProgramDir,"\Dados")
+'CRIA O BD DE CADASTRO DO PRODUTO
+DB CadPro,Dados
+"Sequencia",AutoInc
+"Codigo",String,13
+"Produto",String,40
+"DataCompra", String,8
+"ValorProduto",Decimal,10
+"Local",String,40
+EndDB
+OpenDB CadPro
+
+'######################################################################################
+'PROGRAMA
+'CHAMA AS SUB ROTINAS INICIAIS 
+CriaDBTmp() 
+Tela()
+LisCadPro()
+LisCadProTmp()
+While 1 = 1 
+ Wait ClickButton 
+ 'Saida
+ If RetStr = "BtnSair"
+    EndWindow
+ EndIf    
+ 'Inclusão
+ If RetStr = "BtnIncluir"
+  Mg = Message("Deseja Incluir o Produto?", OptionYesNo)
+  If Mg = True
+   CarregaCadPro()
+   AddRecord CadPro
+  EndIf 
+   LisCadPro()
+   LimpaTela()
+ EndIf  
+ 'Alteração
+ If RetStr = "BtnAlterar" 
+  Mg = Message("Deseja Alterar o Produto?", OptionYesNo)
+  If Mg = True 
+  CarregaCadPro()
+  UpdateRecord CadPro, Posi
+  EndIf  
+  LisCadPro()
+  LimpaTela()
+ EndIf              
+ 'Exclusão
+ If RetStr = "BtnExcluir"
+  Mg = Message("Deseja Excluir o Produto?", OptionYesNo)
+  If Mg = True   
+  Posi = StrVal(BoxCadPro.Txt(0))
+  DeleteRecord CadPro,Posi
+  EndIf 
+  LimpaTela()
+  LisCadPro()
+ EndIf 
+ 'Lista
+ If RetStr = "BtnLista"
+  Mg = Message("Deseja Incluir o Produto na lista?", OptionYesNo)
+  If Mg = True 
+   Posi = StrVal(BoxPesCodPro.Txt(0))
+   CarregaPosPes()
+   LisCadProTmp()
+  EndIf
+  Posi = "" 
+ EndIf
+ 'Nova lista
+ If RetStr = "BtnNovaLista"
+  ApagaCadProTmp()
+  CriaDBTmp()
+  LisCadProTmp()
+ EndIf
+ 'Altera a Qt na Lista
+ If RetStr = "BtnAlteraQt"
+  Mg = Message("Deseja Alterar a Qt?", OptionYesNo)
+  If Mg = True
+  AlteraCadProTmp()
+  LisCadProTmp()
+  EndIf
+ EndIf
+ 'Exclui um item da lista
+ If RetStr = "BtnExcluiItem"
+  Mg = Message("Deseja Excluir o Item? ",OptionYesNo)
+  If Mg = True
+   Posi = StrVal(BoxCadProTmp.Txt(0))
+   DeleteRecord CadProTmp,Posi
+   LisCadProTmp()
+  EndIf
+ EndIf 
+ 'Imprime no relatório
+ If RetStr = "BtnImprime"
+  ImprimeRep()
+ EndIf 
+Loop  
+EndProgram
+
+'######################################################################################
+'SUB PARA DESENHAR ROTULOS, TEXTOS E BOX DA TELA PRINCIPAL
+Sub Tela()
+ Position 1,1 
+ Write "CADASTRO DE PRODUTOS"
+'> Textos e rotulos 
+ Label RotCodigo, "Bar Code",3,1,1,7
+ 'Label RotCodigo.BackColor = Blue
+ Text TxtCodigo,3,9,11,1
+ Text TxtCodigo.Max=13 
+ Label RotMoeda, "Valor",3,25,1,7
+ Currency TxtValor,3,33,10 
+ Label Calendario, "Data",3,47,1,7
+ Calendar Cal,3,55
+ Calendar Cal.Txt = Date()
+ Label RotProduto,"Produto",5,1,1,7
+ Text TxtProduto,5,9,40,1
+ Text TxtProduto.Max=40
+ Label RotLocal,"Supermercado",7,1,1,9
+ Text TxtLocal,7,11,40,1
+ Text TxtLocal.Max=40
+'> Botões de Cadastro no BD
+ Button BtnIncluir,Type7,9,1,"Incluir",PicAdd,"Inclui um registro novo"
+ Button BtnAlterar,Type7,9,15,"Alterar",PicAdd,"Altera um registro"
+ Button BtnExcluir,Type7,9,30,"Excluir",PicDelete,"Exclui um registro"
+ Button BtnSair,Type7,9,45,"Sair",PicExit ' Cria o botão para fechar programa 
+
+ Position 12,1
+ Write "LISTAGEM DOS PRODUTOS"
+'> Box de Listagem do BD 
+ Box BoxCadPro,14,1,13 
+ Box BoxCadPro.Title, "S",3, Center
+ Box BoxCadPro.Title, "Código",12, Left
+ Box BoxCadPro.Title, "Produto",38, Left
+ Box BoxCadPro.Title, "Data",9,Center
+ Box BoxCadPro.Title, "Valor",6, Right
+ Box BoxCadPro.Title, "Supermercado",20, Left
+ Box BoxCadPro.Activate
+
+ Position 36,1
+ Write "PESQUISA DE PRODUTOS"
+ '> Texts de Pesquisa
+ Label RotPesCod,"Codigo",38,1,1,5
+ Text TxtPesCod,38,7,9,1
+ Label RotPesPro,"Produto",38,18,1,5
+ Text TxtPesPro,38,24,18,1
+ Button BtnLista,Type1,38,46,"Inclui na Lista" 
+
+ '> Box de Listagem da Pesquisa de Codigo e Produto
+ Box BoxPesCodPro,40,1,8
+ Box BoxPesCodPro.Title, "S",3, Center
+ Box BoxPesCodPro.Title, "Código",12, Left
+ Box BoxPesCodPro.Title, "Produto",38, Left
+ Box BoxPesCodPro.Title, "Data",9, Center
+ Box BoxPesCodPro.Title, "Valor",6, Right
+ Box BoxPesCodPro.Title, "Supermercado",20, Left
+ Box BoxPesCodPro.Activate 
+ 
+ Position 1,94
+ Write "LISTA DE COMPRA"
+ '> Box de Listagem do BD TMP
+ Box BoxCadProTmp,3,94,29 
+ Box BoxCadProTmp.Title, "S",2, Center
+ Box BoxCadProTmp.Title, "Código",11, Left
+ Box BoxCadProTmp.Title, "Produto",30, Left 
+ Box BoxCadProTmp.Title, "Data",9, Center
+ Box BoxCadProTmp.Title, "Valor",6, Dir
+ Box BoxCadProTmp.Title, "Supermercado",20, Left
+ Box BoxCadProTmp.Title, "Qt",3, Center
+ Box BoxCadProTmp.Title, "SubTotal",10, Left
+ Box BoxCadProTmp.Activate
+
+ '> Botões de alteração da lista
+ Button BtnNovaLista,Type7,52,95,"Nova a Lista",PicForm
+ Button BtnAlteraQt,Type7,52,110,"Altera Qt",Pic$
+ Button BtnExcluiItem,Type7,52,125,"Exclui item",PicDelete
+ Button BtnImprime,Type7,52,140,"Imprime",PicPrint
+EndSub 
+
+'######################################################################################
+'SUB CRIA O BD TEMPORARIO PARA GERAR A LISTA DE COMPRA 
+Sub CriaDBTmp()
+ DB CadProTmp,Dados
+ "Sequencia",AutoInc
+ "Codigo",String,13
+ "Produto",String,40
+ "DataCompra", String,8
+ "ValorProduto",Decimal,10
+ "Local",String,40
+ "Qt",Decimal,4
+ "SubTotal",Decimal,10
+ EndDB
+ OpenDB CadProTmp
+EndSub#%#&'######################################################################################
+'SUB QUE LISTA OS PRODUTOS OS ULTIMOS 10 PRODUTOS CADASTRADOS
+Sub LisCadPro()
+Var Counter Integer
+Var T Integer
+Var S String
+Counter = 0
+T = TotalRecordsDB(CadPro)
+Box BoxCadPro.Cls
+ While Counter < T
+  S = ReadRecord(CadPro,Counter)
+  If S <> ""
+   Box BoxCadPro.Add CadPro.Sequencia
+   Box BoxCadPro.Add CadPro.Codigo
+   Box BoxCadPro.Add CadPro.Produto
+   Info = CadPro.DataCompra
+   Info = SubStr(info, 7, 2), "/", SubStr(Info, 5, 2),"/",SubStr(Info, 1, 4)
+   Box BoxCadPro.Add Info
+   Box BoxCadPro.Add CadPro.ValorProduto
+   Box BoxCadPro.Add CadPro.Local
+   Box BoxCadPro.NewLine
+  EndIf
+  Counter++
+ Loop
+Box BoxCadPro.End
+EndSub
+
+'###################################################################################### 
+'CARREGA UM NOVO REGISTRO COM O CONTEUDO DA CAIXA DE TEXTO
+Sub CarregaCadPro()
+ CadPro.Codigo = TxtCodigo.Txt
+ CadPro.Produto = Format(TxtProduto.Txt,>)
+ CadPro.DataCompra = RevDate(Cal.Txt)
+ CadPro.ValorProduto = TxtValor.Value
+ CadPro.Local = Format(TxtLocal.Txt,>)
+EndSub 
+
+'###################################################################################### 
+'LIMPA A TELA DO PROGRAMA PRINCIPAL
+Sub LimpaTela()
+ Text TxtCodigo.Txt = ""
+ Text TxtProduto.Txt = ""
+ Calendar Cal.Txt = Date()
+ Currency TxtValor.Value = 0
+ Text TxtLocal.Txt = ""
+ Button BtnIncluir.Enabled = True
+EndSub   
+
+'######################################################################################
+'CARREGA O REGISTRO NA CAIXA DE TEXTO PARA EDIÇÃO
+Sub EditaCadPro()
+Var D String
+Var S String 
+ Posi = StrVal(BoxCadPro.Txt(0))
+ S = ReadRecord(CadPro, Posi)
+ Text TxtCodigo.Txt = CadPro.Codigo
+ Text TxtProduto.Txt = CadPro.Produto
+ If D <> ""  
+  D = SubStr(CadPro.DataCompra, 7, 2), "/", SubStr(CadPro.DataCompra, 5, 2),"/",SubStr(CadPro.DataCompra, 1, 4) 
+  Calendar Cal.Txt = D 
+ EndIf 
+ TxtValor.Value = CadPro.ValorProduto
+ Currency TxtValor.Value = TxtValor.Value   
+ Text TxtLocal.Txt = CadPro.Local
+ Button BtnIncluir.Enabled = False
+EndSub   
+
+'######################################################################################
+'LISTA A PESQUISA QUE COMEÇA COM O TEXTO DO PRODUTO
+Sub LisPesPro()
+Var Counter Integer
+Var T Integer
+Var S String
+Counter = 0
+ T = TotalRecordsDB(CadPro)
+ TxtPesPro.Txt = Format(TxtPesPro.Txt,">")'Passa tudo que está sendo digitado para Maiúsculo, para evitar stress
+ Text TxtPesPro.Txt = TxtPesPro.Txt ' Atualiza a caixa de texto para mostrar maiscula mas volta o cursos para o inicio
+ Text TxtPesPro.CursorPos = StrLen(TxtPesPro.Txt)' devolve o cursor no final do texto mas não deixa ir para outra caixa de texto
+ ProDigitado=TxtPesPro.Txt'Passa o que foi digitado para a VAr TxtDigitado
+ Box BoxPesCodPro.Cls
+ While Counter<T'Entra num loop que verifica todas as strings gravadas na Array GravaNomes  
+  S = ReadRecord(CadPro,Counter)
+  TxtSepBD = SubStr(CadPro.Produto,1,StrLen(ProDigitado))
+  If TxtSepBD=ProDigitado 'Caso o texto separado do campo do Bd se igual ao texto digitado
+   Box BoxPesCodPro.Add CadPro.Sequencia
+   Box BoxPesCodPro.Add CadPro.Codigo
+   Box BoxPesCodPro.Add CadPro.Produto
+    Info = CadPro.DataCompra
+    Info = SubStr(info, 7, 2), "/", SubStr(Info, 5, 2),"/",SubStr(Info, 1, 4)
+   Box BoxPesCodPro.Add Info
+   Box BoxPesCodPro.Add CadPro.ValorProduto
+   Box BoxPesCodPro.Add CadPro.Local
+   Box BoxPesCodPro.NewLine
+  EndIf
+  Counter++
+ Loop
+ Box BoxPesCodPro.End 
+EndSub  
+
+'###################################################################################### 
+'LISTA A PESQUISA QUE COMEÇA COM O TEXTO DO CÓDIGO
+Sub LisPesCod() 
+Var Counter Integer
+Var T Integer
+Var S String
+Counter = 0
+T = TotalRecordsDB(CadPro)
+ TxtPesCod.Txt = Format(TxtPesCod.Txt,">")'Passa tudo que está sendo digitado para Maiúsculo, para evitar stress
+ Text TxtPesCod.Txt = TxtPesCod.Txt ' Atualiza a caixa de texto para mostrar maiscula mas volta o cursos para o inicio
+ Text TxtPesCod.CursorPos = StrLen(TxtPesCod.Txt)' devolve o cursor no final do texto mas não deixa ir para outra caixa de texto
+ CodDigitado=TxtPesCod.Txt'Passa o que foi digitado para a VAr TxtDigitado
+ Box BoxPesCodPro.Cls
+ While Counter<T'Entra num loop que verifica todas as strings gravadas na Array GravaNomes
+  S = ReadRecord(CadPro,Counter)
+  TxtSepBD = SubStr(CadPro.Codigo,1,StrLen(CodDigitado))
+  If TxtSepBD=CodDigitado 'Caso o texto separado do campo do Bd se igual ao texto digitado 
+   Box BoxPesCodPro.Add CadPro.Sequencia
+   Box BoxPesCodPro.Add CadPro.Codigo
+   Box BoxPesCodPro.Add CadPro.Produto
+   Info = CadPro.DataCompra
+   Info = SubStr(info, 7, 2), "/", SubStr(Info, 5, 2),"/",SubStr(Info, 1, 4)
+   Box BoxPesCodPro.Add Info
+   Box BoxPesCodPro.Add CadPro.ValorProduto
+   Box BoxPesCodPro.Add CadPro.Local
+   Box BoxPesCodPro.NewLine
+  EndIf
+  Counter++
+ Loop
+ Box BoxPesCodPro.End
+EndSub
+#%#&'######################################################################################
+'SUB QUE CARREGA NO BD CADPROTMP O PRODUTO ESCOLHIDO NO BOX DE PESQUISA
+Sub CarregaPosPes()
+Var S String
+Var GT String
+Var TReg Integer
+Var ST Decimal
+Var MD Decimal
+ S ReadRecord(CadPro,Posi) 
+ GT = GetText("Qual a Quantidade? USE PONTO DECIMAL PARA VIRGULA :","")
+ MD = StrVal(GT)
+ CadProTmp.Codigo = CadPro.Codigo
+ CadProTmp.Produto = CadPro.Produto
+ CadProTmp.DataCompra = CadPro.DataCompra
+ CadProTmp.ValorProduto = CadPro.ValorProduto
+ CadProTmp.Local = CadPro.Local
+ CadProTmp.Qt = GMD
+ ST = MD*CadPro.ValorProduto
+ CadProTmp.SubTotal = ST
+ AddRecord CadProTmp 
+ TReg = TotalRecordsDB(CadProTmp)
+EndSub 
+
+'###################################################################################### 
+'SUB QUE LE O BDTMP E LISTA NO BoxCadProTmp
+Sub LisCadProTmp() 
+Var T Integer
+Var S String
+Var Counter Integer
+Var Total Decimal
+ Total = 0
+ Counter = 0
+ T = TotalRecordsDB(CadProTmp)
+ Box BoxCadProTmp.Cls
+ While Counter < T
+ S = ReadRecord(CadProTmp,Counter)
+ If S <> ""
+  Box BoxCadProTmp.Add CadProTmp.Sequencia
+  Box BoxCadProTmp.Add CadProTmp.Codigo
+  Box BoxCadProTmp.Add CadProTmp.Produto
+  Info = CadPro.DataCompra
+  Info = SubStr(info, 7, 2), "/", SubStr(Info, 5, 2),"/",SubStr(Info, 1, 4)
+  Box BoxCadProTmp.Add Info
+  Box BoxCadProTmp.Add CadProTmp.ValorProduto
+  Box BoxCadProTmp.Add CadProTmp.Local
+  Box BoxCadProTmp.Add CadProTmp.Qt
+  Box BoxCadProTmp.Add CadProTmp.SubTotal
+  Total = Total + CadProTmp.SubTotal
+  Box BoxCadProTmp.NewLine
+ EndIf
+ Counter++ 
+ Loop 
+ Box BoxCadProTmp.End 
+ AtualizaWrite()
+EndSub
+
+'##############################################
+'SUB QUE ATUALIZA OS COMANDOS WRITE
+Sub AtualizaWrite() 
+ ClearWindow 
+ Position 1,1 
+ Write "CADASTRO DE PRODUTOS"
+ Position 12,1
+ Write "LISTAGEM DOS PRODUTOS"
+ Position 36,1
+ Write "PESQUISA DE PRODUTOS" 
+ Position 1,94
+ Write "LISTA DE COMPRA"
+ Position 52,160
+ Write "Total = ",Total
+EndSub  
+
+'##############################################
+'SUB QUE APAGA TODOS OS DADOS NO BD CADPROTMP
+Sub ApagaCadProTmp()
+ Var FileDB String  
+ Var S String
+ CloseDB CadProTmp
+ FileDB = JoinStr(ProgramDir,"\Dados\CadProTmp.Lbf") 
+ DeleteFile FileDB
+EndSub  
+  
+'######################################################################################
+'SUB QUE ALTERA A QUANTIDADE DO PRODUTO ESCOLHIDO NO BOX
+Sub AlteraCadProTmp()
+ Var S String
+ Var GT String
+ Var MD Decimal
+ Posi = StrVal(BoxCadProTmp.Txt(0))
+ S = ReadRecord(CadProTmp,Posi)
+ GT = GetText("Altera Quantidade para ? USE PONTO DECIMAL PARA VIRGULA : ", "")
+ MD = StrVal(GT)
+ CadProTmp.Qt = MD
+ CadProTmp.SubTotal = CadPro.ValorProduto*GT
+ UpdateRecord CadProTmp,Posi
+EndSub#%#&'######################################################################################
+'IMPRESSÃO DA LISTA DE COMPRAS
+Sub ImprimeRep()
+Var T Integer
+Var Counter Integer
+Var S String 
+Var Total Decimal
+Var Tit String
+Rep.Config "Output:VIDEO LeftMargin:300 TopMargin:100"
+Rep.PaperHeight "15000"
+Titulo() 
+ 
+STARTREPORT:
+ 
+ Rep.Col 0, "Width:7 FontName:Arial Narrow FontSize:6 Bold:True HorTab:TrueVerTab:True Align:Left TabColor:RGB(234, 234, 234)"
+ Rep.Col 1, "Width:28 FontName:Arial Narrow FontSize:6 Bold:True HorTab:TrueVerTab:True Align:Left TabColor:RGB(234, 234, 234)"
+ Rep.Col 2, "Width:6 FontName:Arial Narrow FontSize:6 Bold:True HorTab:TrueVerTab:True Align:Left TabColor:RGB(234, 234, 234)"
+ Rep.Col 3, "Width:6 FontName:Arial Narrow FontSize:6 Bold:True HorTab:TrueVerTab:True Align:Left TabColor:RGB(234, 234, 234)"
+ Rep.Col 4, "Width:3 FontName:Arial Narrow FontSize:6 Bold:True HorTab:TrueVerTab:True Align:Left TabColor:RGB(234, 234, 234)"
+ Rep.Col 5, "Width:6 FontName:Arial Narrow FontSize:6 Bold:True HorTab:TrueVerTab:True Align:Left TabColor:RGB(234, 234, 234)"
+ Rep.Col 6, "Width:28 FontName:Arial Narrow FontSize:6 Bold:True HorTab:TrueVerTab:True Align:Left TabColor:RGB(234, 234, 234)"
+ Rep.Add "Código",0,RGB(234, 234, 234) '0
+ Rep.Add "Produto",0,RGB(234, 234, 234)'1
+ Rep.Add "Data",0,RGB(234, 234, 234)      '2
+ Rep.Add "R$ Unitário",0,RGB(234, 234, 234)  '3
+ Rep.Add "Qt",0,RGB(234, 234, 234)     '4
+ Rep.Add "SubTotal",0,RGB(234, 234, 234)     '5
+ Rep.Add "Local",0,RGB(234, 234, 234)   '6
+ Rep.NewLine
+ 
+ Counter = 0
+ T = TotalRecordsDB(CadProTmp) 
+ Total = 0
+ While Counter < T 
+'  Message Counter
+  S = ReadRecord(CadProTmp,Counter) 
+  If S <> "" 
+   Rep.Add CadProTmp.Codigo, 0
+   Rep.Add CadProTmp.Produto, 0
+   Info = CadProTmp.DataCompra 
+   Info = SubStr(info, 7, 2), "/", SubStr(Info, 5, 2),"/",SubStr(Info, 1, 4)
+   Rep.Add Info, 0
+   Rep.Add CadProTmp.ValorProduto, 0
+   Rep.Add CadProTmp.Qt, 0
+   Rep.Add CadProTmp.SubTotal, 0 
+   Rep.Add CadProTmp.Local, 0
+   Rep.NewLine
+   If Rep.TesEndPage = True
+    Rep.NewPage
+    Geral()
+   EndIf
+   Total = Total + CadProTmp.SubTotal
+  EndIf
+ Counter++
+ Loop 
+ 'Exibe o total da lista
+ Rep.NewLine
+ Rep.Col 4, "Bold:True"; Rep.Col 6, "Bold:True"
+ Rep.Add ""
+ Rep.Add ""
+ Rep.Add "" 
+ Rep.Add "TOTAL.:", Red, White
+ Rep.Add ""
+ Rep.Add Format(Total, "###,##0.00"), Red, White 
+ 'Fim do Relatorio
+Rep.End 
+
+If RetStr = "PRINTER"
+  Rep.Config "Output:PRINTER LeftMargin:100 TopMargin:100"
+  Rep.PaperHeight "15000"
+  GoTo STARTREPORT
+EndIf 
+EndSub
+
+Sub Titulo() 
+Var Tit 
+ Tit = Date()
+ Rep.Col 0, "Width:30 FontSize:6 Bold:True HorTab:False VerTab:False Align:Left TabColor:0"
+ Tit = JoinStr("Lista de Compras  ",Tit)
+ Rep.Add Tit
+ Rep.NewLine
+EndSub#%#&'######################################################################################
+'RETORNA O CONTEUDO CLICADO NO BOX PRODUTO
+Sub Timer_Edit(50)
+  If ObjectValue = "BoxCadPro"
+    EditaCadPro()  
+    Button BtnIncluir.Enabled = False
+    ObjectValue = ""
+  EndIf
+ If TxtCodigo.Txt = ""; 
+  'Button BtnIncluir.Enabled = True
+ EndIf
+EndSub 
+
+'######################################################################################
+'FAZ A PESQUISA AUTOMATICA DO PRODUTO
+Sub Timer_PesCodPro(600) 
+ If TxtPesPro.Txt <> "" And TxtPesPro.Txt <> ProDigitado  ' Se diferente de "" e diferente do que se digitou não faz loop 
+   LisPesPro()
+   Text TxtPesCod.Txt = ""
+ EndIf
+ If TxtPesCod.Txt <> "" And TxtPesCod.Txt <> CodDigitado ' Se diferente de "" e diferente do que se digitou não faz loop  
+  LisPesCod()
+  Text TxtPesPro.Txt =""
+ EndIf
+ If StrLen(TxtPesPro.Txt)=0 And StrLen(TxtPesCod.Txt)=0  
+   Box BoxPesCodPro.Cls
+ EndIf
+EndSub 
+ 
+'######################################################################################
+' MOSTRA A DATA  DIA DA SEMANA E HORA NA BORDA DA Window
+'Sub Temer_Relogio(60)
+
+' Agora = Time()
+' Hoje = Date()
+' Dia = WeekDay(Hoje)
+' Info = JoinStr("Hoje são  ",Hoje," - ",Dia," - ","Hora: ",Agora)
+' Write "     ",Info,TituloWindow
+'
+'EndSub
+
+'######################################################################################
+'GRAVA O QUE FOI CLICADO NO BOX EM POS O NUMERO SEQUENCIAL PARA EDIÇÃO DO TEXTO
+'Sub Timer_BoxListaCompra(5)
+' If StrLen = "BoxCadProTmp"
+'  Pos = ValStr(BoxCadProTmp.Txt(0))
+'  OrderDB CadProTmp,"Sequencia"
+'  ObjectValue = ""
+' EndIf
+'EndSub#%

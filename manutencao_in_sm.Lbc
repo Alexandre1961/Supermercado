@@ -1,0 +1,46 @@
+#LB7#'Dimensoes da tela do LB NG
+'1 coluna tem 8 pixels e 1 linha tem 14 pixels
+'Resolução LB NG 79 Colunas x 17 Linhas = (79*8 = 632) x (17*14 = 378)
+'Monitor proporção 4 x 3 = 800 x 600 = 1024 x 768
+'800\8 = 100 colunas
+'600\14 = 42,8 linhas
+'1024\8 = 128
+'768\14 = 54,85 
+'######################################################################################
+'DEFINIÇÕES DA Window
+Window Size = Max,Max
+Window Pos = Center,Center
+Font Parent.Nome = "Akbar"
+Font Parent.Color = Blue
+Font Parent.Size = 16
+Font Parent.Bold=True  
+'######################################################################################
+'CRIAÇÃO DAS VARIAVEIS
+Var S String 
+Var C String
+'######################################################################################
+'CRIAÇÃO DOS BDs
+Dados=JoinStr(ProgramDir,"\Dados")
+'CRIA O BD DE CADASTRO DO PRODUTO
+DB CadPro,Dados
+"Sequencia",AutoInc
+"Codigo",String,13
+"Produto",String,40
+"DataCompra", String,8
+"ValorProduto",Decimal,10
+"Local",String,40
+EndDB
+OpenDB CadPro 
+
+S = ReadRecord(Cadpro, 268)
+C =  Chr(13)
+If S <> ""
+  Write "Sequencia = ", S, C
+  Write "Codigo = ", CadPro.Codigo, C
+  Write "Produto = ", CadPro.Produto, C
+  Write "DataCompra = ", CadPro.DataCompra, C
+  Write "ValorProduto = ", CadPro.ValorProduto, C
+  Write "Local = ", CadPro.Local, C
+EndIf
+
+#%
