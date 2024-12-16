@@ -1,6 +1,6 @@
-Este programa registra preços de varios supermercado e gera uma lista para vc levar consigo .
-A geração da lista e com uma pesquisa de produto que mostra todos os preços praticados
-Abaixo o codigo usado
+'Este programa registra preços de varios supermercado e gera uma lista para vc levar consigo .
+'A geração da lista e com uma pesquisa de produto que mostra todos os preços praticados
+'Abaixo o codigo usado
 'Dimensoes da tela do LB NG
 '1 coluna tem 8 pixels e 1 linha tem 14 pixels
 'Resolução LB NG 79 Colunas x 17 Linhas = (79*8 = 632) x (17*14 = 378)
