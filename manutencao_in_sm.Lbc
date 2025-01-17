@@ -1,7 +1,4 @@
-#LB7#'Verifica a quantidade de registros do seu DB
-'Le o registro informado, se for um registro deletado mostra as variaveis vazias
-'Código a ser implementado para ler um DB e mover os registros não deletados para um nome DB
-'Dimensoes da tela do LB NG
+#LB7#'Dimensoes da tela do LB NG
 '1 coluna tem 8 pixels e 1 linha tem 14 pixels
 'Resolução LB NG 79 Colunas x 17 Linhas = (79*8 = 632) x (17*14 = 378)
 'Monitor proporção 4 x 3 = 800 x 600 = 1024 x 768
@@ -18,11 +15,9 @@ Font Parent.Color = Blue
 Font Parent.Size = 16
 Font Parent.Bold=True  
 '######################################################################################
-'CRIAÇÃO DAS VARIAVEIS 
-Var I Integer
+'CRIAÇÃO DAS VARIAVEIS
 Var S String 
 Var C String
-Var Dados String
 '######################################################################################
 'CRIAÇÃO DOS BDs
 Dados=JoinStr(ProgramDir,"\Dados")
@@ -37,11 +32,7 @@ DB CadPro,Dados
 EndDB
 OpenDB CadPro 
 
-I =  TotalRecordsDB(CadPro)
-Write "Tota de Registros atual do DB = ", I  
-I = I -1
-
-S = ReadRecord(Cadpro, I)
+S = ReadRecord(Cadpro, 268)
 C =  Chr(13)
 If S <> ""
   Write "Sequencia = ", S, C

@@ -1,5 +1,4 @@
-#LB7#'Codigo em Logic Basi - https://www.maxissoft.com/logicbasic/
-'Dimensoes da tela do LB NG
+#LB7#'Dimensoes da tela do LB NG
 '1 coluna tem 8 pixels e 1 linha tem 14 pixels
 'Resolução LB NG 79 Colunas x 17 Linhas = (79*8 = 632) x (17*14 = 378)
 'Monitor proporção 4 x 3 = 800 x 600 = 1024 x 768
