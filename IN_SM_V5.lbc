@@ -201,8 +201,8 @@ Sub Tela()
  Position 1,94
  Write "LISTA DE COMPRA"
  '> Box de Listagem do BD TMP
- Box BoxCadProTmp,3,85,25 
- Box BoxCadProTmp.Title, "S",2, Center
+ Box BoxCadProTmp,3,90,25 
+ Box BoxCadProTmp.Title, "S",3, Center
  Box BoxCadProTmp.Title, "$/Unid",7, Left
  Box BoxCadProTmp.Title, "Produto",30, Left 
  Box BoxCadProTmp.Title, "Data",9, Center
@@ -212,10 +212,10 @@ Sub Tela()
  Box BoxCadProTmp.Title, "SubTotal",10, Left
  Box BoxCadProTmp.Activate
  '> Botões de alteração da lista
- Button BtnNovaLista,Type7,46,85,"Nova a Lista",PicForm
- Button BtnAlteraQt,Type7,46,100,"Altera Qt",Pic$
- Button BtnExcluiItem,Type7,46,115,"Exclui item",PicDelete
- Button BtnImprime,Type7,46,130,"Imprime",PicPrint
+ Button BtnNovaLista,Type7,46,90,"Nova a Lista",PicForm
+ Button BtnAlteraQt,Type7,46,105,"Altera Qt",Pic$
+ Button BtnExcluiItem,Type7,46,120,"Exclui item",PicDelete
+ Button BtnImprime,Type7,46,135,"Imprime",PicPrint
 EndSub 
 '######################################################################################
 'SUB CRIA O BD TEMPORARIO PARA GERAR A LISTA DE COMPRA 
@@ -435,7 +435,7 @@ Sub AtualizaWrite()
  Write "PESQUISA DE PRODUTOS" 
  Position 1,90
  Write "LISTA DE COMPRA"
- Position 47,143
+ Position 47,148
  Write "Total = ",Total
 EndSub  
 '##############################################
